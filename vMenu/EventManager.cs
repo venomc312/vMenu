@@ -34,6 +34,7 @@ namespace vMenuClient
         {
             // Add event handlers.
             EventHandlers.Add("vMenu:SetAddons", new Action(SetAddons));
+            EventHandlers.Add("setPasvMode", new Action<bool>(OnSetPassMode));
             EventHandlers.Add("vMenu:SetPermissions", new Action<string>(MainMenu.SetPermissions));
             EventHandlers.Add("vMenu:GoToPlayer", new Action<string>(SummonPlayer));
             EventHandlers.Add("vMenu:KillMe", new Action<string>(KillMe));
@@ -55,6 +56,14 @@ namespace vMenuClient
 
             RegisterNuiCallbackType("disableImportExportNUI");
             RegisterNuiCallbackType("importData");
+        }
+
+        // This needs to be set to true on spawn, since you can't subscribe to an event twice this is done in the SetAppearanceOnFirstSpawn function. (Event already claimed by vMenu)
+        private void OnSetPassMode(bool arg)
+        {
+            SetEntityRecordsCollisions(PlayerPedId(), arg);
+            NetworkSetFriendlyFireOption(!arg);
+            SetCanAttackFriendly(PlayerPedId(), !arg, false);
         }
 
         [EventHandler("__cfx_nui:importData")]
@@ -82,6 +91,7 @@ namespace vMenuClient
             if (firstSpawn)
             {
                 firstSpawn = false;
+                OnSetPassMode(true);
                 if (MainMenu.MiscSettingsMenu != null && MainMenu.MpPedCustomizationMenu != null && MainMenu.MiscSettingsMenu.MiscRespawnDefaultCharacter && !string.IsNullOrEmpty(GetResourceKvpString("vmenu_default_character")) && !GetSettingsBool(Setting.vmenu_disable_spawning_as_default_character))
                 {
                     await MainMenu.MpPedCustomizationMenu.SpawnThisCharacter(GetResourceKvpString("vmenu_default_character"), false);

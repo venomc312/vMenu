@@ -30,6 +30,7 @@ namespace vMenuClient
         public bool PlayerIsIgnored { get; private set; } = UserDefaults.EveryoneIgnorePlayer;
         public bool PlayerStayInVehicle { get; private set; } = UserDefaults.PlayerStayInVehicle;
         public bool PlayerFrozen { get; private set; } = false;
+        public bool PlayerPvpMode { get; private set; } = true;
         private Menu CustomDrivingStyleMenu = new Menu("Driving Style", "Custom Driving Style");
 
         /// <summary>
@@ -42,6 +43,7 @@ namespace vMenuClient
             menu = new Menu(Game.Player.Name, "Player Options");
 
             // Create all checkboxes.
+            MenuCheckboxItem playerPvpModeCheckbox = new MenuCheckboxItem("Pvp Toggle", "Enables PvP", PlayerPvpMode);
             MenuCheckboxItem playerGodModeCheckbox = new MenuCheckboxItem("Godmode", "Makes you invincible.", PlayerGodMode);
             MenuCheckboxItem invisibleCheckbox = new MenuCheckboxItem("Invisible", "Makes you invisible to yourself and others.", PlayerInvisible);
             MenuCheckboxItem unlimitedStaminaCheckbox = new MenuCheckboxItem("Unlimited Stamina", "Allows you to run forever without slowing down or taking damage.", PlayerStamina);
@@ -86,6 +88,9 @@ namespace vMenuClient
 
             #region add items to menu based on permissions
             // Add all checkboxes to the menu. (keeping permissions in mind)
+
+            menu.AddMenuItem(playerPvpModeCheckbox);
+
             if (IsAllowed(Permission.POGod))
             {
                 menu.AddMenuItem(playerGodModeCheckbox);
@@ -331,6 +336,35 @@ namespace vMenuClient
                 if (item == playerGodModeCheckbox)
                 {
                     PlayerGodMode = _checked;
+                }
+                // Pvp Mode toggled.
+                else if (item == playerPvpModeCheckbox)
+                {
+                    PlayerPvpMode = _checked;
+                    /** PlayerPvpMode = _checked;
+                    SetEntityRecordsCollisions(PlayerPedId(), _checked ? false : true);
+                    NetworkSetFriendlyFireOption(_checked ? true : false);
+                    SetCanAttackFriendly(PlayerPedId(), _checked ? true : false, false);
+
+                    string state = _checked ? "enabled" : "disabled";
+
+                    TriggerEvent("chat:addMessage", new
+                    {
+                        color = new[] { 255, 0, 0 },
+                        multiline = true,
+                        args = new[] { "Me", "Pvp mode " + state + "\n DEBUG:\n" + Game.Player.ServerId + "\n" + PlayerPedId()}
+                    });
+                    **/
+
+                    string state2 = _checked ? "enabled" : "disabled";
+
+                    bool state = _checked ? true : false;
+
+                    // GetPlayerFromServerId(Game.Player.ServerId)
+
+                    Notify.Info("Pvp mode is " + state2);
+
+                    TriggerServerEvent("setPasvModeSrv", "rubba bandz bitch", state);
                 }
                 // Invisibility toggled.
                 else if (item == invisibleCheckbox)

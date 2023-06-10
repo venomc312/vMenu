@@ -180,6 +180,9 @@ namespace vMenuServer
         /// </summary>
         public MainServer()
         {
+            // EventHandlers["setPasvModeSrv"] += new Action<Player, string>(setPasvModeSrv);
+
+            EventHandlers.Add("SetPasvModeSrv", new Action<Player, string, string>(setPasvModeSrv));
             // name check
             if (GetCurrentResourceName() != "vMenu")
             {
@@ -196,6 +199,16 @@ namespace vMenuServer
             }
             else
             {
+                EventHandlers.Add("setPasvModeSrv", new Action<Player, bool>((TargetPlayer, state) =>
+                {
+                    Debug.Write("PasvModeToggle");
+                    TriggerClientEvent("chat:addMessage", new
+                    {
+                        args = new string[] { GetPlayerName(TargetPlayer.Name) + " Is now toggling PVP mode" },
+                        color = new int[] { 255, 255, 0 }
+                    });
+                    TriggerClientEvent(TargetPlayer, "setPasvMode", state);
+                }));
                 // Add event handlers.
                 EventHandlers.Add("vMenu:GetPlayerIdentifiers", new Action<int, NetworkCallbackDelegate>((TargetPlayer, CallbackFunction) =>
                 {
@@ -236,6 +249,18 @@ namespace vMenuServer
                 if (GetSettingsBool(Setting.vmenu_enable_time_sync))
                     Tick += TimeLoop;
             }
+        }
+
+        private void setPasvModeSrv([FromSource] Player player, string ignore, string state)
+        {
+            string state2 = bool.Parse(state) ? "enabled" : "disabled";
+
+            TriggerClientEvent("chat:addMessage", new
+            {
+                args = new string[] { player.Name + " has now " + state2 +" PVP mode!" },
+                color = new int[] { 255, 255, 0 }
+            });
+            TriggerClientEvent(player, "setPasvMode", state);
         }
         #endregion
 
@@ -725,6 +750,17 @@ namespace vMenuServer
             FreezeTime = freezeTimeNew;
         }
         #endregion
+
+        private void setPasvMode([FromSource] Player player, bool state)
+        {
+            Debug.Write("PasvModeToggle");
+            TriggerClientEvent("chat:addMessage", new
+            {
+                args = new string[] { GetPlayerName(player.Name) + " Is now toggling PVP mode" },
+                color = new int[] { 255, 255, 0 }
+            });
+            TriggerClientEvent(player, "setPasvMode", state);
+        }
 
         #region Online Players Menu Actions
         /// <summary>
